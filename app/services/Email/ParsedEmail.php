@@ -55,15 +55,23 @@ class ParsedEmail {
 
         $ignoredPatterns = \Config::get('app.emails.ignoredPatterns');
 
+        \Log::debug('ccs', compact('cc'));
+
         $cc = array_filter($cc, function($i) use ($ignoredPatterns) {
             if(empty($i)) return false;
 
             foreach($ignoredPatterns as $pattern) {
-                if(preg_match($pattern, $i) !== false) return false;
+                if(preg_match($pattern, $i)) return false;
             }
+
+            return true;
         });
 
+        \Log::debug('filtered ccs', compact('cc'));
+
         $cc = $this->sanitizeAddresses($cc);
+
+        \Log::debug('sanitized ccs', compact('cc'));
 
         return new ResponseEmail( 
             $this->manager, 
