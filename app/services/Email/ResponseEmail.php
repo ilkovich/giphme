@@ -14,7 +14,7 @@ class ResponseEmail {
         $this->to         = $to;
         $this->manager    = $manager;
         $this->from       = $from;
-        $this->subject    = "RE: $subject";
+        $this->subject    = "Re: $subject";
     }
 
     public function send($sendEmpty = false) {

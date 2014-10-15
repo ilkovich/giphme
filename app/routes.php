@@ -11,6 +11,8 @@
 |
 */
 
+Route::get('/', function() { return Response::make('ok', 200); });
+
 Route::post('/email/hook', ['uses' => 'EmailController@postHookContextio']);
 
 Route::post('/email/hook_sendgrid', ['uses' => 'EmailController@postHookSendgrid']);
