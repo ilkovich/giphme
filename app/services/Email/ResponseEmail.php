@@ -8,6 +8,8 @@ class ResponseEmail {
     protected $subject;
     protected $manager;
 
+    protected $headers = [];
+
     public function __construct($manager, $from, $to, $cc, $subject, $message="") {
         $this->message    = $message;
         $this->cc         = $cc;
@@ -32,7 +34,20 @@ class ResponseEmail {
         $this->message .= $str;
     }
 
+    public function addHeader($key, $value) {
+        \Log::debug("Adding header $key with '$value'");
+        $this->headers[$key] = $value;
+
+        return $this;
+    }
+
+
     //ACCESSORS
+
+    public function getHeaders() {
+        return $this->headers;
+    }
+
     public function getMessage() {
         return "<html><head></head><body>".$this->message."</body></html>";
     }

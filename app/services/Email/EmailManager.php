@@ -7,8 +7,8 @@ use \Swift_SmtpTransport;
 
 class EmailManager {
 
-    public function parse($from, $to, $cc, $subject, $message) {
-        return new ParsedEmail($this, $from, $to, $cc, $subject, $message);
+    public function parse($from, $to, $cc, $subject, $message, $headers = array()) {
+        return new ParsedEmail($this, $from, $to, $cc, $subject, $message, $headers);
     }
 
     public function send(ResponseEmail $response) {
@@ -25,7 +25,7 @@ class EmailManager {
         $transport->setUsername($sendgrid_username);
         $transport->setPassword($sendgrid_password);
 
-
+        
         $mailer     = Swift_Mailer::newInstance($transport);
 
         $message    = new Swift_Message();
@@ -33,8 +33,12 @@ class EmailManager {
         $message->setCc($cc);
         $message->setFrom($from);
         $message->setSubject($subject);
-        $message->setBody($html, 'text/html');
-        $message->addPart(strip_tags($html), 'text/plain');
+        $message->setBody(strip_tags($html));
+        $message->addPart($html, 'text/html');
+
+        foreach($response->getHeaders() as $key => $value) {
+            $message->getHeaders()->addTextHeader($key, $value);
+        }
 
         try {
           $status = $mailer->send($message);

@@ -47,10 +47,16 @@ class EmailController extends BaseController {
         $subject  = Input::get('subject');
         $message  = Input::get('text') ?: Input::get('html');
         $message  = preg_replace('/(^\w.+:\n)?(^>.*(\n|$))+/mi', '', $message);
-        Log::debug("details", compact('from', 'to', 'cc', 'subject', 'message'));
+        $headers = [];
+        foreach(preg_split("/[\r\n]+/", Input::get('headers')) as $header) {
+            $idx = strpos($header, ':');
+            $headers[substr($header, 0, $idx)] = substr($header, $idx+1);
+        }
+
+        Log::debug("details", compact('from', 'to', 'cc', 'subject', 'message', 'headers'));
 
         $email = $this->email
-            ->parse($from, $to, $cc, $subject, $message)
+            ->parse($from, $to, $cc, $subject, $message, $headers)
             ->process()
             ->send()
         ;

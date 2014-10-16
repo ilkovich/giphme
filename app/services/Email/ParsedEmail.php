@@ -6,6 +6,7 @@ class ParsedEmail {
     protected $subject;
     protected $to;
     protected $cc;
+    protected $headers;
 
     protected $hashtags;
 
@@ -13,13 +14,15 @@ class ParsedEmail {
     
     protected $manager;
 
-    public function __construct($manager, $from, $to, $cc, $subject, $message) {
+    public function __construct($manager, $from, $to, $cc, $subject, $message, $headers = array()) {
         $this->message    = $message;
         $this->cc         = $cc;
         $this->to         = $to;
         $this->from       = $from;
         $this->subject    = $subject;
         $this->manager    = $manager;
+        $this->headers    = $headers;
+
         $this->handlerChain = [\App::make('giphy')]; 
 
         $this->parse();
@@ -73,13 +76,15 @@ class ParsedEmail {
 
         \Log::debug('sanitized ccs', compact('cc'));
 
-        return new ResponseEmail( 
+        return (new ResponseEmail( 
             $this->manager, 
             \Config::get('app.emails.fromAddress'),
             $to, 
             $cc, 
             $this->subject
-        );
+        ))->addHeader('In-Reply-To', data_get($this->headers, 'Message-ID'))
+          ->addHeader('References',  data_get($this->headers, 'Message-ID'))
+        ;
     }
 
     public function sanitizeAddresses($addresses) {
