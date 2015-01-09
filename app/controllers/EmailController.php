@@ -65,4 +65,34 @@ class EmailController extends BaseController {
 
         return Response::make('ok', 200);
     }
+
+    public function postHookMandrill() {
+        $msg = (object)json_decode(Input::get('mandrill_events'))[0]->msg;
+
+        
+
+        $from     = $msg->from_email;
+        $to       = array_map(function($i) { return $i[0]; }, $msg->to);
+        $cc       = array_map(function($i) { return $i[0]; }, isset($msg->cc) ? $msg->cc : []);
+        $subject  = $msg->subject;
+        $message  = $msg->text ?: $msg->html;
+        $message  = preg_replace('/(^\w.+:\n)?(^>.*(\n|$))+/mi', '', $message);
+        $headers = [];
+        foreach(preg_split("/[\r\n]+/", Input::get('headers')) as $header) {
+            $idx = strpos($header, ':');
+            $headers[substr($header, 0, $idx)] = substr($header, $idx+1);
+        }
+
+        Log::debug("details", compact('from', 'to', 'cc', 'subject', 'message', 'headers'));
+
+        $email = $this->email
+            ->parse($from, $to, $cc, $subject, $message, $headers)
+            ->process()
+            ->send()
+        ;
+
+        Log::debug("response", [$email->getMessage()]);
+
+        return Response::make('ok', 200);
+    }
 }

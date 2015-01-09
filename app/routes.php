@@ -17,3 +17,5 @@ Route::post('/email/hook', ['uses' => 'EmailController@postHookContextio']);
 
 Route::post('/email/hook_sendgrid', ['uses' => 'EmailController@postHookSendgrid']);
 
+Route::any('/email/hook_mandrill', ['uses' => 'EmailController@postHookMandrill']);
+

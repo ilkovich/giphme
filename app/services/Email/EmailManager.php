@@ -12,8 +12,22 @@ class EmailManager {
     }
 
     public function send(ResponseEmail $response) {
-        $sendgrid_username = $_ENV['SENDGRID_USERNAME'];
-        $sendgrid_password = $_ENV['SENDGRID_PASSWORD'];
+        $port = 587;
+
+        switch($_ENV['SEND_ENGINE']) {
+        case 'sendgrid':
+            $username = $_ENV['SENDGRID_USERNAME'];
+            $password = $_ENV['SENDGRID_PASSWORD'];
+            $server = 'smtp.sendgrid.net';
+            break;
+        case 'mandrill':
+            $username = $_ENV['MANDRILL_USERNAME'];
+            $password = $_ENV['MANDRILL_APIKEY'];
+            $server = 'smtp.mandrillapp.com';
+            break;
+        default:
+            throw new Exception("SEND_ENGINE not configured correctly, ".$_ENV['SEND_ENGINE']." unknown.");
+        }
 
         $to                = $response->getTo();
         $cc                = $response->getCC();
@@ -21,9 +35,9 @@ class EmailManager {
         $subject           = $response->getSubject();
         $html              = $response->getMessage();
 
-        $transport  = Swift_SmtpTransport::newInstance('smtp.sendgrid.net', 587);
-        $transport->setUsername($sendgrid_username);
-        $transport->setPassword($sendgrid_password);
+        $transport  = Swift_SmtpTransport::newInstance($server, $port);
+        $transport->setUsername($username);
+        $transport->setPassword($password);
 
         
         $mailer     = Swift_Mailer::newInstance($transport);
